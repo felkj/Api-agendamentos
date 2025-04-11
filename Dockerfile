@@ -1,17 +1,20 @@
-FROM gradle:8.11.1-jdk-21-and-23
+FROM gradle:8.11.1-jdk-21-and-23 as builder
 
-RUN apt-get update && apt-get install -qq -y --no-install-recommends
-
-ENV INSTALL_PATH /barber-shop-api
-
-RUN mkdir $INSTALL_PATH
-
+ENV INSTALL_PATH=/barber-shop-api
 WORKDIR $INSTALL_PATH
 
 COPY . .
 
-# Forçar a permissão de execução para o gradlew
-RUN chmod +x ./gradlew
+# Faz o build usando o Gradle wrapper (ou você pode mudar pra `gradle build`)
+RUN ./gradlew build --no-daemon
 
-# Comando para rodar o Gradle
-CMD ./gradlew build
+# Agora começa uma nova imagem, mais leve
+FROM eclipse-temurin:21-jdk
+ENV INSTALL_PATH=/barber-shop-api
+WORKDIR $INSTALL_PATH
+
+COPY --from=builder /barber-shop-api/build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
