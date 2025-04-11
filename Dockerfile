@@ -10,8 +10,8 @@ WORKDIR $INSTALL_PATH
 
 COPY . .
 
-# Garantir que o gradlew tenha permissão de execução
-RUN chmod +x gradlew
+# Forçar a permissão de execução para o gradlew
+RUN chmod +x ./gradlew
 
-# Agora, podemos executar o gradlew no próximo comando
+# Comando para rodar o Gradle
 CMD ./gradlew build
