@@ -1,25 +1,26 @@
+# Usar uma imagem base do Gradle com JDK
 FROM gradle:8.11.1-jdk-21-and-23
 
-# Instalação de dependências adicionais, se necessário
-RUN apt-get update && apt-get install -qq -y --no-install-recommends \
-    curl \
-    git
+# Atualizar pacotes e instalar dependências
+RUN apt-get update && apt-get install -qq -y --no-install-recommends
 
 # Definir o diretório de instalação
 ENV INSTALL_PATH /barber-shop-api
+
+# Criar o diretório
 RUN mkdir $INSTALL_PATH
 
 # Definir o diretório de trabalho
 WORKDIR $INSTALL_PATH
 
-# Copiar os arquivos para o container
+# Copiar os arquivos do projeto para o container
 COPY . .
 
-# Configurar memória para Gradle e evitar o uso do daemon
-ENV GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false"
+# Definir variáveis de ambiente para conectar ao banco de dados
+ENV DB_URL=${DB_URL}
+ENV DB_USER=${DB_USER}
+ENV DB_PASSWORD=${DB_PASSWORD}
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 
-# Executar o build (caso o build seja feito ao iniciar o container)
-RUN gradle build --no-daemon
-
-# Definir o comando de execução (caso o container precise rodar algum serviço)
-CMD ["java", "-jar", "build/libs/barber-shop-api.jar"]
+# Comando para rodar a aplicação
+CMD ["./gradlew", "bootRun"]
