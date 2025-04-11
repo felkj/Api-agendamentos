@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+    command: bash start-dev.sh
+    environment:
+      DB_URL: jdbc:postgresql://switchback.proxy.rlwy.net:21095/railway
+      DB_USER: postgres
+      DB_PASSWORD: WQrXRjNBdPOpaCewDKDYMttvPdiZJCXe
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    volumes:
+      - .:/barber-shop-api:z
+  db:
+    image: postgres:17.2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: WQrXRjNBdPOpaCewDKDYMttvPdiZJCXe
+      POSTGRES_DB: railway
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "21095:21095"
+    networks:
+      - barber-shop-net
+networks:
+  barber-shop-net:
+    name: barber-shop-net
+    external: true
+volumes:
+  db:
