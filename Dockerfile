@@ -1,20 +1,23 @@
-FROM gradle:8.11.1-jdk-21-and-23 as builder
+FROM gradle:8.11.1-jdk-21-and-23 AS builder
 
-ENV INSTALL_PATH=/barber-shop-api
-WORKDIR $INSTALL_PATH
-
+WORKDIR /app
 COPY . .
 
-# Faz o build usando o Gradle wrapper (ou você pode mudar pra `gradle build`)
-RUN ./gradlew build --no-daemon
+# Dá permissão de execução ao gradlew
+RUN chmod +x gradlew
 
-# Agora começa uma nova imagem, mais leve
+# Builda o projeto com Gradle
+RUN ./gradlew clean build --no-daemon
+
+# Nova imagem só com JDK pra rodar
 FROM eclipse-temurin:21-jdk
-ENV INSTALL_PATH=/barber-shop-api
-WORKDIR $INSTALL_PATH
+WORKDIR /app
 
-COPY --from=builder /barber-shop-api/build/libs/*.jar app.jar
+# Copia o JAR gerado para a imagem final
+COPY --from=builder /app/build/libs/*.jar app.jar
 
+# Railway usa a porta 8080 por padrão
 EXPOSE 8080
 
+# Executa o JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
